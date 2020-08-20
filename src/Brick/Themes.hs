@@ -2,7 +2,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
 -- | Support for representing attribute themes and loading and saving
 -- theme customizations in INI-style files.
 --
@@ -93,11 +92,11 @@ import Data.Maybe (fromMaybe, isNothing, catMaybes, mapMaybe)
 import Data.Monoid ((<>))
 #endif
 import qualified Data.Foldable as F
+import Lens.Micro
 
 import Data.Ini.Config
 
 import Brick.AttrMap (AttrMap, AttrName, attrMap, attrNameComponents)
-import Brick.Types.TH (suffixLenses)
 
 import Text.Printf
 
@@ -112,6 +111,18 @@ data CustomAttr =
                -- ^ The customized style, if any.
                }
                deriving (Eq, Read, Show, Generic, NFData)
+
+customFgL :: Lens' CustomAttr (Maybe (MaybeDefault Color))
+customFgL f x = fmap (\y -> x{customFg = y}) (f $ customFg x)
+{-# INLINE customFgL #-}
+
+customBgL :: Lens' CustomAttr (Maybe (MaybeDefault Color))
+customBgL f x = fmap (\y -> x{customBg = y}) (f $ customBg x)
+{-# INLINE customBgL #-}
+
+customStyleL :: Lens' CustomAttr (Maybe Style)
+customStyleL f x = fmap (\y -> x{customStyle = y}) (f $ customStyle x)
+{-# INLINE customStyleL #-}
 
 instance Sem.Semigroup CustomAttr where
     a <> b =
@@ -132,6 +143,10 @@ data ThemeDocumentation =
                        -- can be generated mechanically.
                        }
                        deriving (Eq, Read, Show, Generic, NFData)
+
+themeDescriptionsL :: Lens' ThemeDocumentation (M.Map AttrName T.Text)
+themeDescriptionsL f x = fmap (\y -> x{themeDescriptions = y}) (f $ themeDescriptions x)
+{-# INLINE themeDescriptionsL #-}
 
 -- | A theme provides a set of default attribute mappings, a default
 -- attribute, and a set of customizations for the default mapping
@@ -157,9 +172,21 @@ data Theme =
           }
           deriving (Eq, Read, Show, Generic, NFData)
 
-suffixLenses ''CustomAttr
-suffixLenses ''Theme
-suffixLenses ''ThemeDocumentation
+themeDefaultAttrL :: Lens' Theme (Attr)
+themeDefaultAttrL f x = fmap (\y -> x{themeDefaultAttr = y}) (f $ themeDefaultAttr x)
+{-# INLINE themeDefaultAttrL #-}
+
+themeDefaultMappingL :: Lens' Theme (M.Map AttrName Attr)
+themeDefaultMappingL f x = fmap (\y -> x{themeDefaultMapping = y}) (f $ themeDefaultMapping x)
+{-# INLINE themeDefaultMappingL #-}
+
+themeCustomDefaultAttrL :: Lens' Theme (Maybe CustomAttr)
+themeCustomDefaultAttrL f x = fmap (\y -> x{themeCustomDefaultAttr = y}) (f $ themeCustomDefaultAttr x)
+{-# INLINE themeCustomDefaultAttrL #-}
+
+themeCustomMappingL :: Lens' Theme (M.Map AttrName CustomAttr)
+themeCustomMappingL f x = fmap (\y -> x{themeCustomMapping = y}) (f $ themeCustomMapping x)
+{-# INLINE themeCustomMappingL #-}
 
 defaultSectionName :: T.Text
 defaultSectionName = "default"

@@ -1,5 +1,4 @@
 -- | Basic types used by this library.
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -61,9 +60,6 @@ module Brick.Types
   , vrPositionL
   , vrSizeL
 
-  -- * Making lenses
-  , suffixLenses
-
   -- * Dynamic borders
   , bordersL
   , DynBorder(..)
@@ -91,6 +87,8 @@ import Data.Monoid (Monoid(..))
 import Lens.Micro (_1, _2, to, (^.), (&), (.~), Lens')
 import Lens.Micro.Type (Getting)
 import Control.Monad.Catch (MonadThrow, MonadCatch, MonadMask)
+import Brick.Widgets.Border.Style (BorderStyle)
+import Brick.AttrMap (AttrMap)
 #if !MIN_VERSION_base(4,13,0)
 import Control.Monad.Fail (MonadFail)
 #endif
@@ -99,7 +97,6 @@ import Control.Monad.Trans.Reader
 import Graphics.Vty (Attr)
 import Control.Monad.IO.Class
 
-import Brick.Types.TH
 import Brick.Types.Internal
 import Brick.AttrMap (AttrName, attrMapLookup)
 
@@ -171,8 +168,6 @@ type RenderM n a = ReaderT Context (State (RenderState n)) a
 getContext :: RenderM n Context
 getContext = ask
 
-suffixLenses ''Context
-
 -- | The rendering context's current drawing attribute.
 attrL :: forall r. Getting r Context Attr
 attrL = to (\c -> attrMapLookup (c^.ctxAttrNameL) (c^.ctxAttrMapL))
@@ -189,3 +184,35 @@ lookupAttrName :: AttrName -> RenderM n Attr
 lookupAttrName n = do
     c <- getContext
     return $ attrMapLookup n (c^.ctxAttrMapL)
+
+ctxAttrNameL :: Lens' Context AttrName
+ctxAttrNameL f x = fmap (\y -> x{ctxAttrName = y}) (f $ ctxAttrName x)
+{-# INLINE ctxAttrNameL #-}
+
+availWidthL :: Lens' Context Int
+availWidthL f x = fmap (\y -> x{availWidth = y}) (f $ availWidth x)
+{-# INLINE availWidthL #-}
+
+availHeightL :: Lens' Context Int
+availHeightL f x = fmap (\y -> x{availHeight = y}) (f $ availHeight x)
+{-# INLINE availHeightL #-}
+
+windowWidthL :: Lens' Context Int
+windowWidthL f x = fmap (\y -> x{windowWidth = y}) (f $ windowWidth x)
+{-# INLINE windowWidthL #-}
+
+windowHeightL :: Lens' Context Int
+windowHeightL f x = fmap (\y -> x{windowHeight = y}) (f $ windowHeight x)
+{-# INLINE windowHeightL #-}
+
+ctxBorderStyleL :: Lens' Context BorderStyle
+ctxBorderStyleL f x = fmap (\y -> x{ctxBorderStyle = y}) (f $ ctxBorderStyle x)
+{-# INLINE ctxBorderStyleL #-}
+
+ctxAttrMapL :: Lens' Context AttrMap
+ctxAttrMapL f x = fmap (\y -> x{ctxAttrMap = y}) (f $ ctxAttrMap x)
+{-# INLINE ctxAttrMapL #-}
+
+ctxDynBordersL :: Lens' Context Bool
+ctxDynBordersL f x = fmap (\y -> x{ctxDynBorders = y}) (f $ ctxDynBorders x)
+{-# INLINE ctxDynBordersL #-}

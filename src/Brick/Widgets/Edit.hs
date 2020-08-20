@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE CPP #-}
@@ -76,7 +75,14 @@ data Editor t n =
            -- ^ The name of the editor
            }
 
-suffixLenses ''Editor
+editContentsL :: Lens' (Editor t n) (Z.TextZipper t)
+editContentsL f x = fmap (\y -> x{editContents = y}) (f $ editContents x)
+{-# INLINE editContentsL #-}
+
+editorNameL :: Lens' (Editor t n) (n)
+editorNameL f x = fmap (\y -> x{editorName = y}) (f $ editorName x)
+{-# INLINE editorNameL #-}
+
 
 instance (Show t, Show n) => Show (Editor t n) where
     show e =

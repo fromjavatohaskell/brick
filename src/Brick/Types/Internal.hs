@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
@@ -56,7 +55,6 @@ import Data.Monoid
 #endif
 
 import Lens.Micro (_1, _2, Lens')
-import Lens.Micro.TH (makeLenses)
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Graphics.Vty (Vty, Event, Button, Modifier, DisplayRegion, Image, Attr, emptyImage)
@@ -66,7 +64,6 @@ import Control.DeepSeq (NFData)
 import Brick.BorderMap (BorderMap)
 import qualified Brick.BorderMap as BM
 import Brick.Types.Common
-import Brick.Types.TH
 import Brick.AttrMap (AttrName, AttrMap)
 import Brick.Widgets.Border.Style (BorderStyle)
 
@@ -88,6 +85,14 @@ data VisibilityRequest =
        }
        deriving (Show, Eq, Read, Generic, NFData)
 
+vrPositionL :: Lens' VisibilityRequest Location
+vrPositionL f x = fmap (\y -> x{vrPosition = y}) (f $ vrPosition x)
+{-# INLINE vrPositionL #-}
+
+vrSizeL :: Lens' VisibilityRequest DisplayRegion
+vrSizeL f x = fmap (\y -> x{vrSize = y}) (f $ vrSize x)
+{-# INLINE vrSizeL #-}
+
 -- | Describes the state of a viewport as it appears as its most recent
 -- rendering.
 data Viewport =
@@ -99,6 +104,18 @@ data Viewport =
        -- ^ The size of the viewport.
        }
        deriving (Show, Read, Generic, NFData)
+
+vpLeft :: Lens' Viewport Int
+vpLeft f x = fmap (\y -> x{_vpLeft = y}) (f $ _vpLeft x)
+{-# INLINE vpLeft #-}
+
+vpTop :: Lens' Viewport Int
+vpTop f x = fmap (\y -> x{_vpTop = y}) (f $ _vpTop x)
+{-# INLINE vpTop #-}
+
+vpSize :: Lens' Viewport DisplayRegion
+vpSize f x = fmap (\y -> x{_vpSize = y}) (f $ _vpSize x)
+{-# INLINE vpSize #-}
 
 -- | The type of viewports that indicates the direction(s) in which a
 -- viewport is scrollable.
@@ -165,6 +182,14 @@ data CursorLocation n =
                    }
                    deriving (Read, Show, Generic, NFData)
 
+cursorLocationL :: Lens' (CursorLocation n) Location
+cursorLocationL f x = fmap (\y -> x{cursorLocation = y}) (f $ cursorLocation x)
+{-# INLINE cursorLocationL #-}
+
+cursorLocationNameL :: Lens' (CursorLocation n) (Maybe n)
+cursorLocationNameL f x = fmap (\y -> x{cursorLocationName = y}) (f $ cursorLocationName x)
+{-# INLINE cursorLocationNameL #-}
+
 -- | A border character has four segments, one extending in each direction
 -- (horizontally and vertically) from the center of the character.
 data BorderSegment = BorderSegment
@@ -177,7 +202,17 @@ data BorderSegment = BorderSegment
     -- ^ Should this segment be represented visually?
     } deriving (Eq, Ord, Read, Show, Generic, NFData)
 
-suffixLenses ''BorderSegment
+bsAcceptL :: Lens' BorderSegment Bool
+bsAcceptL f x = fmap (\y -> x{bsAccept = y}) (f $ bsAccept x)
+{-# INLINE bsAcceptL #-}
+
+bsOfferL :: Lens' BorderSegment Bool
+bsOfferL f x = fmap (\y -> x{bsOffer = y}) (f $ bsOffer x)
+{-# INLINE bsOfferL #-}
+
+bsDrawL :: Lens' BorderSegment Bool
+bsDrawL f x = fmap (\y -> x{bsDraw = y}) (f $ bsDraw x)
+{-# INLINE bsDrawL #-}
 
 -- | Information about how to redraw a dynamic border character when it abuts
 -- another dynamic border character.
@@ -193,7 +228,17 @@ data DynBorder = DynBorder
     , dbSegments :: Edges BorderSegment
     } deriving (Eq, Read, Show, Generic, NFData)
 
-suffixLenses ''DynBorder
+dbStyleL :: Lens' DynBorder BorderStyle
+dbStyleL f x = fmap (\y -> x{dbStyle = y}) (f $ dbStyle x)
+{-# INLINE dbStyleL #-}
+
+dbAttrL :: Lens' DynBorder Attr
+dbAttrL f x = fmap (\y -> x{dbAttr = y}) (f $ dbAttr x)
+{-# INLINE dbAttrL #-}
+
+dbSegmentsL :: Lens' DynBorder (Edges BorderSegment)
+dbSegmentsL f x = fmap (\y -> x{dbSegments = y}) (f $ dbSegments x)
+{-# INLINE dbSegmentsL #-}
 
 -- | The type of result returned by a widget's rendering function. The
 -- result provides the image, cursor positions, and visibility requests
@@ -226,7 +271,25 @@ data Result n =
            }
            deriving (Show, Read, Generic, NFData)
 
-suffixLenses ''Result
+imageL :: Lens' (Result n) Image
+imageL f x = fmap (\y -> x{image = y}) (f $ image x)
+{-# INLINE imageL #-}
+
+cursorsL :: Lens' (Result n) [CursorLocation n]
+cursorsL f x = fmap (\y -> x{cursors = y}) (f $ cursors x)
+{-# INLINE cursorsL #-}
+
+visibilityRequestsL :: Lens' (Result n) [VisibilityRequest]
+visibilityRequestsL f x = fmap (\y -> x{visibilityRequests = y}) (f $ visibilityRequests x)
+{-# INLINE visibilityRequestsL #-}
+
+extentsL :: Lens' (Result n) [Extent n]
+extentsL f x = fmap (\y -> x{extents = y}) (f $ extents x)
+{-# INLINE extentsL #-}
+
+bordersL :: Lens' (Result n) (BorderMap DynBorder)
+bordersL f x = fmap (\y -> x{borders = y}) (f $ borders x)
+{-# INLINE bordersL #-}
 
 emptyResult :: Result n
 emptyResult = Result emptyImage [] [] [] BM.empty
@@ -254,6 +317,26 @@ data RenderState n =
        , clickableNames :: [n]
        } deriving (Read, Show, Generic, NFData)
 
+viewportMapL :: Lens' (RenderState n) (M.Map n Viewport)
+viewportMapL f x = fmap (\y -> x{viewportMap = y}) (f $ viewportMap x)
+{-# INLINE viewportMapL #-}
+
+rsScrollRequestsL :: Lens' (RenderState n) [(n, ScrollRequest)] 
+rsScrollRequestsL f x = fmap (\y -> x{rsScrollRequests = y}) (f $ rsScrollRequests x)
+{-# INLINE rsScrollRequestsL #-}
+
+observedNamesL :: Lens' (RenderState n) (S.Set n)
+observedNamesL f x = fmap (\y -> x{observedNames = y}) (f $ observedNames x)
+{-# INLINE observedNamesL #-}
+
+renderCacheL :: Lens' (RenderState n) (M.Map n (Result n))
+renderCacheL f x = fmap (\y -> x{renderCache = y}) (f $ renderCache x)
+{-# INLINE renderCacheL #-}
+
+clickableNamesL :: Lens' (RenderState n) [n]
+clickableNamesL f x = fmap (\y -> x{clickableNames = y}) (f $ clickableNames x)
+{-# INLINE clickableNamesL #-}
+
 data EventRO n = EventRO { eventViewportMap :: M.Map n Viewport
                          , eventVtyHandle :: Vty
                          , latestExtents :: [Extent n]
@@ -276,7 +359,3 @@ data Context =
             }
             deriving Show
 
-suffixLenses ''RenderState
-suffixLenses ''VisibilityRequest
-suffixLenses ''CursorLocation
-makeLenses ''Viewport

@@ -1,6 +1,5 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveFoldable#-}
 {-# LANGUAGE DeriveTraversable #-}
@@ -84,11 +83,11 @@ import Data.Foldable (find, toList)
 #endif
 import Control.Monad.Trans.State (evalState, get, put)
 
-import Lens.Micro ((^.), (^?), (&), (.~), (%~), _2, _head, set)
+import Lens.Micro ((^.), (^?), (&), (.~), (%~), _2, _head, set, Lens')
 import Data.Functor (($>))
 import Data.List.NonEmpty (NonEmpty((:|)))
 import Data.Maybe (fromMaybe)
-import Data.Semigroup (Semigroup, (<>), sconcat)
+import Data.Semigroup (sconcat)
 import qualified Data.Sequence as Seq
 import Graphics.Vty (Event(..), Key(..), Modifier(..))
 import qualified Data.Vector as V
@@ -133,7 +132,21 @@ data GenericList n t e =
          -- ^ The height of an individual item in the list.
          } deriving (Functor, Foldable, Traversable, Show, Generic)
 
-suffixLenses ''GenericList
+listElementsL :: Lens' (GenericList n t e) (t e)
+listElementsL f x = fmap (\y -> x{listElements = y}) (f $ listElements x)
+{-# INLINE listElementsL #-}
+
+listSelectedL :: Lens' (GenericList n t e) (Maybe Int)
+listSelectedL f x = fmap (\y -> x{listSelected = y}) (f $ listSelected x)
+{-# INLINE listSelectedL #-}
+
+listNameL :: Lens' (GenericList n t e) (n)
+listNameL f x = fmap (\y -> x{listName = y}) (f $ listName x)
+{-# INLINE listNameL #-}
+
+listItemHeightL :: Lens' (GenericList n t e) Int
+listItemHeightL f x = fmap (\y -> x{listItemHeight = y}) (f $ listItemHeight x)
+{-# INLINE listItemHeightL #-}
 
 -- | An alias for 'GenericList' specialized to use a 'Vector' as its
 -- container type.

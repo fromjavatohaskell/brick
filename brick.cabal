@@ -109,12 +109,11 @@ library
     Data.Text.Markup
   other-modules:
     Brick.Types.Common
-    Brick.Types.TH
     Brick.Types.Internal
     Brick.Widgets.Internal
 
-  build-depends:       base <= 4.14.1.0,
-                       vty >= 5.29,
+  build-depends:       base,
+                       vty,
                        transformers,
                        data-clist >= 0.1,
                        directory >= 1.2.5.0,
@@ -123,7 +122,6 @@ library
                        filepath,
                        containers >= 0.5.7,
                        microlens >= 0.3.0.0,
-                       microlens-th,
                        microlens-mtl,
                        config-ini,
                        vector,
@@ -132,7 +130,7 @@ library
                        text,
                        text-zipper >= 0.7.1,
                        template-haskell,
-                       deepseq >= 1.3 && < 1.5,
+                       deepseq >= 1.3,
                        unix,
                        bytestring,
                        word-wrap >= 0.2
@@ -176,7 +174,6 @@ executable brick-form-demo
                        brick,
                        text,
                        microlens,
-                       microlens-th,
                        vty
 
 executable brick-text-wrap-demo
@@ -204,8 +201,7 @@ executable brick-cache-demo
                        brick,
                        vty,
                        text,
-                       microlens >= 0.3.0.0,
-                       microlens-th
+                       microlens >= 0.3.0.0
 
 executable brick-visibility-demo
   if !flag(demos)
@@ -218,8 +214,7 @@ executable brick-visibility-demo
                        brick,
                        vty,
                        text,
-                       microlens >= 0.3.0.0,
-                       microlens-th
+                       microlens >= 0.3.0.0
 
 executable brick-viewport-scroll-demo
   if !flag(demos)
@@ -260,7 +255,6 @@ executable brick-mouse-demo
                        vty,
                        text,
                        microlens >= 0.3.0.0,
-                       microlens-th,
                        text-zipper
 
 executable brick-layer-demo
@@ -274,8 +268,7 @@ executable brick-layer-demo
                        brick,
                        vty,
                        text,
-                       microlens >= 0.3.0.0,
-                       microlens-th
+                       microlens >= 0.3.0.0
 
 executable brick-suspend-resume-demo
   if !flag(demos)
@@ -288,8 +281,7 @@ executable brick-suspend-resume-demo
                        brick,
                        vty,
                        text,
-                       microlens >= 0.3.0.0,
-                       microlens-th
+                       microlens >= 0.3.0.0
 
 executable brick-padding-demo
   if !flag(demos)
@@ -382,8 +374,7 @@ executable brick-custom-event-demo
                        brick,
                        vty,
                        text,
-                       microlens >= 0.3.0.0,
-                       microlens-th
+                       microlens >= 0.3.0.0
 
 executable brick-fill-demo
   if !flag(demos)
@@ -423,8 +414,7 @@ executable brick-edit-demo
                        vty,
                        text,
                        vector,
-                       microlens >= 0.3.0.0,
-                       microlens-th
+                       microlens >= 0.3.0.0
 
 executable brick-border-demo
   if !flag(demos)

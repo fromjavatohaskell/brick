@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
 module Brick.Types.Common
@@ -11,11 +10,10 @@ module Brick.Types.Common
   , eTopL, eBottomL, eRightL, eLeftL
   ) where
 
-import Brick.Types.TH (suffixLenses)
 import qualified Data.Semigroup as Sem
 import GHC.Generics
 import Control.DeepSeq
-import Lens.Micro (_1, _2)
+import Lens.Micro (_1, _2, Lens')
 import Lens.Micro.Internal (Field1, Field2)
 
 -- | A terminal screen location.
@@ -24,7 +22,9 @@ data Location = Location { loc :: (Int, Int)
                          }
                 deriving (Show, Eq, Ord, Read, Generic, NFData)
 
-suffixLenses ''Location
+locL :: Lens' Location (Int, Int)
+locL f x = fmap (\y -> x{loc = y}) (f $ loc x)
+{-# INLINE locL #-}
 
 instance Field1 Location Location Int Int where
     _1 = locL._1
@@ -46,7 +46,21 @@ instance Monoid Location where
 data Edges a = Edges { eTop, eBottom, eLeft, eRight :: a }
     deriving (Eq, Ord, Read, Show, Functor, Generic, NFData)
 
-suffixLenses ''Edges
+eTopL :: Lens' (Edges a) (a)
+eTopL f x = fmap (\y -> x{eTop = y}) (f $ eTop x)
+{-# INLINE eTopL #-}
+
+eBottomL :: Lens' (Edges a) (a)
+eBottomL f x = fmap (\y -> x{eBottom = y}) (f $ eBottom x)
+{-# INLINE eBottomL #-}
+
+eLeftL :: Lens' (Edges a) (a)
+eLeftL f x = fmap (\y -> x{eLeft = y}) (f $ eLeft x)
+{-# INLINE eLeftL #-}
+
+eRightL :: Lens' (Edges a) (a)
+eRightL f x = fmap (\y -> x{eRight = y}) (f $ eRight x)
+{-# INLINE eRightL #-}
 
 instance Applicative Edges where
     pure a = Edges a a a a

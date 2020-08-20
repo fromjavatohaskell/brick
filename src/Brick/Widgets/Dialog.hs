@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 -- | This module provides a simple dialog widget. You get to pick the
@@ -74,7 +73,21 @@ data Dialog a =
            -- ^ The maximum width of the dialog
            }
 
-suffixLenses ''Dialog
+dialogTitleL :: Lens' (Dialog a) (Maybe String)
+dialogTitleL f x = fmap (\y -> x{dialogTitle = y}) (f $ dialogTitle x)
+{-# INLINE dialogTitleL #-}
+
+dialogButtonsL :: Lens' (Dialog a) [(String, a)]
+dialogButtonsL f x = fmap (\y -> x{dialogButtons = y}) (f $ dialogButtons x)
+{-# INLINE dialogButtonsL #-}
+
+dialogSelectedIndexL :: Lens' (Dialog a) (Maybe Int)
+dialogSelectedIndexL f x = fmap (\y -> x{dialogSelectedIndex = y}) (f $ dialogSelectedIndex x)
+{-# INLINE dialogSelectedIndexL #-}
+
+dialogWidthL :: Lens' (Dialog a) Int
+dialogWidthL f x = fmap (\y -> x{dialogWidth = y}) (f $ dialogWidth x)
+{-# INLINE dialogWidthL #-}
 
 handleDialogEvent :: Event -> Dialog a -> EventM n (Dialog a)
 handleDialogEvent ev d =

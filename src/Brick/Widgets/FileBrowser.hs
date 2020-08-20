@@ -1,5 +1,4 @@
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TupleSections #-}
@@ -174,6 +173,43 @@ data FileBrowser n =
                 -- change the selection function.
                 }
 
+
+fileBrowserWorkingDirectoryL :: Lens' (FileBrowser n) FilePath
+fileBrowserWorkingDirectoryL f x = fmap (\y -> x{fileBrowserWorkingDirectory = y}) (f $ fileBrowserWorkingDirectory x)
+{-# INLINE fileBrowserWorkingDirectoryL #-}
+
+fileBrowserEntriesL :: Lens' (FileBrowser n) (List n FileInfo)
+fileBrowserEntriesL f x = fmap (\y -> x{fileBrowserEntries = y}) (f $ fileBrowserEntries x)
+{-# INLINE fileBrowserEntriesL #-}
+
+fileBrowserLatestResultsL :: Lens' (FileBrowser n) [FileInfo]
+fileBrowserLatestResultsL f x = fmap (\y -> x{fileBrowserLatestResults = y}) (f $ fileBrowserLatestResults x)
+{-# INLINE fileBrowserLatestResultsL #-}
+
+fileBrowserSelectedFilesL :: Lens' (FileBrowser n) (Set.Set String)
+fileBrowserSelectedFilesL f x = fmap (\y -> x{fileBrowserSelectedFiles = y}) (f $ fileBrowserSelectedFiles x)
+{-# INLINE fileBrowserSelectedFilesL #-}
+
+fileBrowserNameL :: Lens' (FileBrowser n) n
+fileBrowserNameL f x = fmap (\y -> x{fileBrowserName = y}) (f $ fileBrowserName x)
+{-# INLINE fileBrowserNameL #-}
+
+fileBrowserEntryFilterL :: Lens' (FileBrowser n) (Maybe (FileInfo -> Bool))
+fileBrowserEntryFilterL f x = fmap (\y -> x{fileBrowserEntryFilter = y}) (f $ fileBrowserEntryFilter x)
+{-# INLINE fileBrowserEntryFilterL #-}
+
+fileBrowserSearchStringL :: Lens' (FileBrowser n) (Maybe T.Text)
+fileBrowserSearchStringL f x = fmap (\y -> x{fileBrowserSearchString = y}) (f $ fileBrowserSearchString x)
+{-# INLINE fileBrowserSearchStringL #-}
+
+fileBrowserExceptionL :: Lens' (FileBrowser n) (Maybe E.IOException)
+fileBrowserExceptionL f x = fmap (\y -> x{fileBrowserException = y}) (f $ fileBrowserException x)
+{-# INLINE fileBrowserExceptionL #-}
+
+fileBrowserSelectableL :: Lens' (FileBrowser n) (FileInfo -> Bool)
+fileBrowserSelectableL f x = fmap (\y -> x{fileBrowserSelectable = y}) (f $ fileBrowserSelectable x)
+{-# INLINE fileBrowserSelectableL #-}
+
 -- | File status information.
 data FileStatus =
     FileStatus { fileStatusSize :: Int64
@@ -183,6 +219,14 @@ data FileStatus =
                -- determined.
                }
                deriving (Show, Eq)
+
+fileStatusSizeL :: Lens' FileStatus Int64
+fileStatusSizeL f x = fmap (\y -> x{fileStatusSize = y}) (f $ fileStatusSize x)
+{-# INLINE fileStatusSizeL #-}
+
+fileStatusFileTypeL :: Lens' FileStatus (Maybe FileType)
+fileStatusFileTypeL f x = fmap (\y -> x{fileStatusFileType = y}) (f $ fileStatusFileType x)
+{-# INLINE fileStatusFileTypeL #-}
 
 -- | Information about a file entry in the browser.
 data FileInfo =
@@ -206,6 +250,27 @@ data FileInfo =
              }
              deriving (Show, Eq)
 
+fileInfoFilenameL :: Lens' FileInfo String
+fileInfoFilenameL f x = fmap (\y -> x{fileInfoFilename = y}) (f $ fileInfoFilename x)
+{-# INLINE fileInfoFilenameL #-}
+
+fileInfoSanitizedFilenameL :: Lens' FileInfo String
+fileInfoSanitizedFilenameL f x = fmap (\y -> x{fileInfoSanitizedFilename = y}) (f $ fileInfoSanitizedFilename x)
+{-# INLINE fileInfoSanitizedFilenameL #-}
+
+fileInfoFilePathL :: Lens' FileInfo FilePath
+fileInfoFilePathL f x = fmap (\y -> x{fileInfoFilePath = y}) (f $ fileInfoFilePath x)
+{-# INLINE fileInfoFilePathL #-}
+
+fileInfoFileStatusL :: Lens' FileInfo (Either E.IOException FileStatus)
+fileInfoFileStatusL f x = fmap (\y -> x{fileInfoFileStatus = y}) (f $ fileInfoFileStatus x)
+{-# INLINE fileInfoFileStatusL #-}
+
+fileInfoLinkTargetTypeL :: Lens' FileInfo (Maybe FileType)
+fileInfoLinkTargetTypeL f x = fmap (\y -> x{fileInfoLinkTargetType = y}) (f $ fileInfoLinkTargetType x)
+{-# INLINE fileInfoLinkTargetTypeL #-}
+
+
 -- | The type of file entries in the browser.
 data FileType =
     RegularFile
@@ -223,10 +288,6 @@ data FileType =
     | UnixSocket
     -- ^ A Unix socket.
     deriving (Read, Show, Eq)
-
-suffixLenses ''FileBrowser
-suffixLenses ''FileInfo
-suffixLenses ''FileStatus
 
 -- | Make a new file browser state. The provided resource name will be
 -- used to render the 'List' viewport of the browser.
